@@ -1,0 +1,13 @@
+[project]
+name = "pyimagebed"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = [
+    "aiofiles>=24.1.0",
+    "boto3>=1.37.13",
+    "fastapi>=0.115.11",
+    "python-multipart>=0.0.20",
+    "uvicorn>=0.34.0",
+]

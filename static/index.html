@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>图床</title>
+    <link rel="stylesheet" href="/static/style.css">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🖼️</text></svg>">
+</head>
+
+<body>
+    <nav class="navbar">
+        <div class="container">
+            <a class="navbar-brand" href="#">图床</a>
+            <button class="navbar-toggle" id="navbarToggle">
+                <span class="toggle-icon"></span>
+            </button>
+            <div class="navbar-menu" id="navbarMenu">
+                <ul class="navbar-nav">
+                    <li class="nav-item">
+                        <a class="nav-link active" href="#">图片管理</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container">
+        <div class="row">
+            <div class="col-full">
+                <div class="card">
+                    <div class="card-header">
+                        <h5>上传图片</h5>
+                    </div>
+                    <div class="card-body">
+                        <form id="uploadForm" enctype="multipart/form-data">
+                            <div class="form-group">
+                                <label for="file" class="form-label">选择图片文件</label>
+                                <input type="file" class="form-control" id="file" name="file" accept="image/*" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="storageType" class="form-label">存储源</label>
+                                <select class="form-select" id="storageType" name="storage_type">
+                                    <option value="local">本地存储</option>
+                                </select>
+                            </div>
+                            <button type="submit" class="btn btn-primary">
+                                <span class="icon-upload"></span> 上传图片
+                            </button>
+                        </form>
+
+                        <div class="upload-result" id="uploadResult">
+                            <div class="alert alert-success">
+                                <p>上传成功！</p>
+                                <div class="input-group">
+                                    <input type="text" class="form-control" id="imageUrl" readonly>
+                                    <button class="btn btn-outline" type="button" id="copyUrlBtn">
+                                        <span class="icon-clipboard"></span> 复制
+                                    </button>
+                                </div>
+                                <div class="mt-2">
+                                    <a href="#" id="viewImage" target="_blank" class="btn btn-small btn-info">
+                                        <span class="icon-eye"></span> 查看图片
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-full">
+                <div class="card">
+                    <div class="card-header">
+                        <h5>图片列表</h5>
+                        <button id="refreshBtn" class="btn btn-small btn-outline">
+                            <span class="icon-refresh"></span> 刷新
+                        </button>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table">
+                                <thead>
+                                    <tr>
+                                        <th>预览</th>
+                                        <th>文件名</th>
+                                        <th>存储源</th>
+                                        <th>大小</th>
+                                        <th>上传时间</th>
+                                        <th>操作</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="imageList">
+                                    <!-- 图片列表将通过JavaScript动态加载 -->
+                                </tbody>
+                            </table>
+                        </div>
+                        <div id="emptyMessage" class="empty-message">
+                            <span class="icon-images"></span>
+                            <p>暂无图片，请上传</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 图片预览模态框 -->
+    <div class="modal" id="previewModal">
+        <div class="modal-overlay"></div>
+        <div class="modal-container">
+            <div class="modal-header">
+                <h5 class="modal-title">图片预览</h5>
+                <button type="button" class="modal-close" id="modalClose">&times;</button>
+            </div>
+            <div class="modal-body">
+                <img id="previewImage" class="img-fluid" alt="预览图片">
+            </div>
+            <div class="modal-footer">
+                <div class="input-group">
+                    <input type="text" class="form-control" id="previewImageUrl" readonly>
+                    <button class="btn btn-outline" type="button" id="previewCopyUrlBtn">
+                        <span class="icon-clipboard"></span> 复制
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Toast 消息容器 -->
+    <div class="toast-container" id="toastContainer"></div>
+
+    <script src="/static/script.js"></script>
+</body>
+
+</html>
