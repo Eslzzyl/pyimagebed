@@ -3,6 +3,7 @@ from fastapi import FastAPI, UploadFile, File, Form, HTTPException
 from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
+from uvicorn.server import logger
 import os
 import hashlib
 import json
@@ -28,7 +29,7 @@ app.add_middleware(
 )
 
 # 确保目录存在
-for dir_path in ["static", "uploads", "data"]:
+for dir_path in ["uploads", "data"]:
     os.makedirs(dir_path, exist_ok=True)
 
 # 挂载静态文件
@@ -36,28 +37,6 @@ app.mount("/static", StaticFiles(directory="static"), name="static")
 
 # 创建存储管理器
 storage_manager = StorageManager()
-
-# 添加默认存储
-storage_manager.add_storage("local", LocalStorage(base_dir="uploads"))
-
-# 尝试从配置加载S3存储
-try:
-    with open("config.json", "r", encoding="utf-8") as f:
-        config = json.load(f)
-        if "s3" in config:
-            storage_manager.add_storage(
-                "s3",
-                S3Storage(
-                    aws_access_key_id=config["s3"]["aws_access_key_id"],
-                    aws_secret_access_key=config["s3"]["aws_secret_access_key"],
-                    region_name=config["s3"]["region_name"],
-                    bucket_name=config["s3"]["bucket_name"],
-                ),
-            )
-except FileNotFoundError:
-    print("配置文件未找到，仅使用本地存储")
-except Exception as e:
-    print(f"加载配置出错: {str(e)}")
 
 
 # 哈希图片内容
@@ -288,4 +267,64 @@ async def list_storage_types():
 
 
 if __name__ == "__main__":
-    uvicorn.run("main:app", host="0.0.0.0", port=7899)
+    # 加载配置文件
+    try:
+        with open("config.json", "r", encoding="utf-8") as f:
+            config = json.load(f)
+            app_config = config.get("app", {})
+            storage_config = config.get("storage", {})
+
+            # 获取应用配置
+            host = app_config.get("host", "127.0.0.1")
+            port = app_config.get("port", 7899)
+
+            # 加载本地存储
+            if "local" in storage_config and storage_config["local"].get(
+                "enabled", True
+            ):
+                base_dir = storage_config["local"].get("base_dir", "uploads")
+                storage_manager.add_storage("local", LocalStorage(base_dir=base_dir))
+
+            # 加载S3存储
+            if "s3" in storage_config:
+                for i, s3_config in enumerate(storage_config["s3"]):
+                    if s3_config.get("enabled", True):
+                        # 使用提供的名称或生成默认名称
+                        storage_name = s3_config.get("name", f"s3_{i + 1}")
+                        storage_manager.add_storage(
+                            storage_name,
+                            S3Storage(
+                                aws_access_key_id=s3_config["aws_access_key_id"],
+                                aws_secret_access_key=s3_config[
+                                    "aws_secret_access_key"
+                                ],
+                                region_name=s3_config["region_name"],
+                                bucket_name=s3_config["bucket_name"],
+                            ),
+                        )
+
+            # 在这里添加更多存储类型的加载
+
+        # 检查是否有任何存储被加载
+        if len(storage_manager.storages) == 0:
+            logger.error("没有找到任何有效的存储配置，程序将退出")
+            import sys
+
+            sys.exit(1)
+
+    except FileNotFoundError:
+        logger.error("配置文件未找到，请创建config.json文件并配置至少一种存储方式")
+        import sys
+
+        sys.exit(1)
+    except json.JSONDecodeError:
+        logger.error("配置文件格式不正确，请检查config.json文件")
+        import sys
+
+        sys.exit(1)
+    except Exception as e:
+        logger.error(f"加载配置出错: {str(e)}，程序将退出")
+        import sys
+
+        sys.exit(1)
+    uvicorn.run("main:app", host=host, port=port)

@@ -3,15 +3,31 @@
     "title": "PyImageBed",
     "description": "简单易用的Python图床",
     "port": 8000,
-    "host": "0.0.0.0"
+    "host": "127.0.0.1"
   },
   "storage": {
-    "default": "local"
-  },
-  "s3": {
-    "aws_access_key_id": "YOUR_ACCESS_KEY_ID",
-    "aws_secret_access_key": "YOUR_SECRET_ACCESS_KEY",
-    "region_name": "us-east-1",
-    "bucket_name": "pyimagebed-bucket"
+    "default": "local",
+    "local": {
+      "enabled": true,
+      "base_dir": "uploads"
+    },
+    "s3": [
+      {
+        "name": "aws_s3",
+        "enabled": true,
+        "aws_access_key_id": "YOUR_ACCESS_KEY_1",
+        "aws_secret_access_key": "YOUR_SECRET_KEY_1",
+        "region_name": "us-east-1",
+        "bucket_name": "your-bucket-1"
+      },
+      {
+        "name": "aliyun_oss",
+        "enabled": true,
+        "aws_access_key_id": "YOUR_ACCESS_KEY_2",
+        "aws_secret_access_key": "YOUR_SECRET_KEY_2",
+        "region_name": "cn-beijing",
+        "bucket_name": "your-bucket-2"
+      }
+    ]
   }
 }
